@@ -95,12 +95,18 @@ def test_battle(battle_model, combatant_1, combatant_2, mock_update_meal_stats, 
     """Test executing a battle and determining a winner."""
     battle_model.prep_combatant(combatant_1)
     battle_model.prep_combatant(combatant_2)
+
     winner = battle_model.battle()
+
     assert winner in ["Meal 1", "Meal 2"], "Expected one of the meals to be the winner"
-    mock_update_meal_stats.assert_any_call(1, "win")
-    mock_update_meal_stats.assert_any_call(2, "loss")
+
     assert mock_update_meal_stats.call_count == 2, "Expected update_meal_stats to be called twice"
+
+    mock_update_meal_stats.assert_any_call(combatant_1.id, "win")
+    mock_update_meal_stats.assert_any_call(combatant_2.id, "loss")
+
     assert len(battle_model.combatants) == 1, "Expected only one combatant to remain after battle"
+
 
 def test_battle_insufficient_combatants(battle_model, combatant_1):
     """Test that a battle cannot start with less than two combatants."""
@@ -118,7 +124,16 @@ def test_battle_edge_case_for_delta(battle_model, combatant_1, combatant_2, mock
     battle_model.prep_combatant(combatant_1)
     battle_model.prep_combatant(combatant_2)
     
-    # Mock get_random to return the exact delta value
+    score_1 = battle_model.get_battle_score(combatant_1)
+    score_2 = battle_model.get_battle_score(combatant_2)
+    delta = abs(score_1 - score_2) / 100
+
+    mocker.patch("meal_max.models.battle_model.get_random", return_value=delta)
+
+    winner = battle_model.battle()
+    assert winner in ["Meal 1", "Meal 2"], "Expected one of the meals to be the winner when delta equals random value"
+
+    
     mock_get_random = mocker.patch("meal_max.models.battle_model.get_random", return_value=0.1)
     
     score_1 = battle_model.get_battle_score(combatant_1)
@@ -175,6 +190,7 @@ def test_get_battle_score_zero_price(battle_model):
 def test_get_battle_score_negative_price(battle_model):
     """Test calculating battle score for a combatant with a negative price."""
     negative_price_combatant = Meal(id=8, meal="Discount Meal", cuisine="Thai", price=-10.0, difficulty="HIGH")
-    score = battle_model.get_battle_score(negative_price_combatant)
-    expected_score = (negative_price_combatant.price * len(negative_price_combatant.cuisine)) - 1
-    assert score == expected_score, f"Expected score to be {expected_score}, but got {score}"
+
+    with pytest.raises(ValueError, match="Price must be a positive value"):
+        battle_model.get_battle_score(negative_price_combatant)
+
