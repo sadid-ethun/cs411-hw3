@@ -102,8 +102,12 @@ def test_battle(battle_model, combatant_1, combatant_2, mock_update_meal_stats, 
 
     assert mock_update_meal_stats.call_count == 2, "Expected update_meal_stats to be called twice"
 
-    mock_update_meal_stats.assert_any_call(combatant_1.id, "win")
-    mock_update_meal_stats.assert_any_call(combatant_2.id, "loss")
+    if winner == "Meal 1":
+        mock_update_meal_stats.assert_any_call(combatant_1.id, "win")
+        mock_update_meal_stats.assert_any_call(combatant_2.id, "loss")
+    else:
+        mock_update_meal_stats.assert_any_call(combatant_1.id, "loss")
+        mock_update_meal_stats.assert_any_call(combatant_2.id, "win")
 
     assert len(battle_model.combatants) == 1, "Expected only one combatant to remain after battle"
 
