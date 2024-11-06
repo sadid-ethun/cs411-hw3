@@ -1,9 +1,10 @@
 from contextlib import contextmanager
-import sqlite3
 import re
+import sqlite3
 
 import pytest
-from kitchen_model import (
+
+from meal_max.models.kitchen_model import (
     Meal,
     create_meal,
     clear_meals,
