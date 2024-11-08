@@ -160,6 +160,18 @@ clear_combatants() {
   fi
 }
 
+get_combatants() {
+  echo "Getting all combatants..."
+  response=$(curl -s -X GET "$BASE_URL/get-combatants")
+  echo "Response: $response"
+  echo "$response" | grep -q '"status": "success"'
+  if [ $? -ne 0 ]; then
+    echo "Failed to get combatants."
+    exit 1
+  fi
+}
+
+
 
 ############################################################
 #
@@ -206,6 +218,11 @@ get_meal_by_name "Pizza"
 # Prepare meals for battle and execute a battle
 prep_combatant "Pizza"
 prep_combatant "Burger"
+
+# Verify combatants are retrieved
+get_combatants
+
+# Execute a battle
 execute_battle
 
 # Test leaderboard retrieval by different sorting criteria
