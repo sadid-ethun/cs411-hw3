@@ -24,8 +24,8 @@ RUN chmod +x /app/sql/create_db.sh
 # Define a volume for persisting the database
 VOLUME ["/app/db"]
 
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
+# Make port 5001 available to the world outside this container
+EXPOSE 5001
 
 # Run the entrypoint script when the container launches
 CMD ["/app/entrypoint.sh"]
